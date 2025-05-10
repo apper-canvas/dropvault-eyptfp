@@ -111,10 +111,24 @@ function App() {
   const shareFile = (fileId, expiryDays = 7) => {
     const shareLinkId = crypto.randomUUID();
     const expiryDate = new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+    
+    // Update the file's shared status
+    setFiles(prev => prev.map(file => 
+      file.id === fileId ? { ...file, shared: true } : file
+    ));
+    
+    // Add to shared files list
+    setSharedFiles(prev => [...prev, {
+      id: shareLinkId,
+      fileId,
+      expiryDate,
+      createdAt: new Date()
+    }]);
   };
+
+const toggleDarkMode = () => {
+  setDarkMode(!darkMode);
+};
 
   return (
     <>
