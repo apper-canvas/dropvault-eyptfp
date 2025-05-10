@@ -53,7 +53,7 @@ function Sidebar({ isOpen, setIsOpen }) {
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
         </div>
-        <SidebarContent collapsed={false} />
+        <SidebarContent collapsed={false} navLinkClass={navLinkClass} />
       </div>
       
       {/* Desktop sidebar */}
@@ -76,14 +76,14 @@ function Sidebar({ isOpen, setIsOpen }) {
               }
             </button>
           </div>
-          <SidebarContent collapsed={collapsed} />
+          <SidebarContent collapsed={collapsed} navLinkClass={navLinkClass} />
         </div>
       </div>
     </>
   );
 }
 
-function SidebarContent({ collapsed }) {
+function SidebarContent({ collapsed, navLinkClass }) {
   const navItems = [
     { path: '/', icon: DashboardIcon, label: 'Dashboard' },
     { path: '/files', icon: FilesIcon, label: 'Files' },
