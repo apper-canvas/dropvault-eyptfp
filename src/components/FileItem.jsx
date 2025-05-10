@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
 import getIcon from '../utils/iconUtils';
+import { downloadFile } from '../utils/downloadUtils';
 
 // Icon declarations
 const FileTextIcon = getIcon('FileText');
@@ -13,8 +14,16 @@ const FileArchiveIcon = getIcon('Archive');
 const FilePenIcon = getIcon('FilePen');
 const FileIcon = getIcon('File');
 const MoreVerticalIcon = getIcon('MoreVertical');
+const DownloadIcon = getIcon('Download');
 
 function FileItem({ file, viewMode }) {
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = (e) => {
+    e.stopPropagation();
+    setDownloading(true);
+    downloadFile(file).finally(() => setDownloading(false));
+  };
   const getFileIcon = () => {
     if (file.type.startsWith('image/')) return ImageIcon;
     if (file.type.startsWith('audio/')) return FileAudioIcon;
@@ -44,13 +53,26 @@ function FileItem({ file, viewMode }) {
           <div className="bg-primary-light/10 dark:bg-primary-dark/20 p-2 rounded-lg text-primary">
             <FileIconComponent className="w-6 h-6" />
           </div>
-          <button className="p-1 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700">
-            <MoreVerticalIcon className="w-4 h-4" />
-          </button>
+          <div className="flex items-center">
+            <button 
+              onClick={handleDownload}
+              className="p-1.5 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 text-primary"
+              aria-label="Download file"
+              disabled={downloading}
+            >
+              <DownloadIcon className={`w-4 h-4 ${downloading ? 'animate-pulse' : ''}`} />
+            </button>
+            <button className="p-1.5 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700">
+              <MoreVerticalIcon className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         <div className="truncate font-medium">{file.name}</div>
         <div className="text-xs text-surface-500 dark:text-surface-400 mt-1">
-          {formatFileSize(file.size)} • {format(file.uploadDate, 'MMM d, yyyy')}
+          <div className="flex items-center justify-between">
+            <span>{formatFileSize(file.size)}</span>
+            <span>{format(file.uploadDate, 'MMM d, yyyy')}</span>
+          </div>
         </div>
       </div>
     );
@@ -65,6 +87,14 @@ function FileItem({ file, viewMode }) {
       <div className="flex items-center gap-4">
         <span className="text-sm text-surface-500 dark:text-surface-400 hidden sm:inline">{formatFileSize(file.size)}</span>
         <span className="text-sm text-surface-500 dark:text-surface-400">{format(file.uploadDate, 'MMM d, yyyy')}</span>
+        <button 
+          onClick={handleDownload}
+          className="p-1.5 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 text-primary"
+          aria-label="Download file"
+          disabled={downloading}
+        >
+          <DownloadIcon className={`w-4 h-4 ${downloading ? 'animate-pulse' : ''}`} />
+        </button>
       </div>
     </div>
   );

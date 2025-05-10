@@ -29,13 +29,15 @@ function App() {
 
   // Handler for file uploads
   const handleFileUpload = (newFiles) => {
-    const filesWithMetadata = newFiles.map(file => ({
-      id: crypto.randomUUID(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      lastModified: new Date(file.lastModified),
-      uploadDate: new Date()
+    const filesWithMetadata = newFiles.map(file => ({ 
+      id: crypto.randomUUID(), 
+      name: file.name, 
+      size: file.size, 
+      type: file.type, 
+      lastModified: new Date(file.lastModified), 
+      uploadDate: new Date(),
+      // Store the actual file object for download functionality
+      fileObject: file
     }));
     
     setFiles(prev => [...filesWithMetadata, ...prev]);
