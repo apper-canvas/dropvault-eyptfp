@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Home from './pages/Home';
+import DashboardLayout from './layout/DashboardLayout';
+import Dashboard from './pages/Dashboard';
+import FileManager from './pages/FileManager';
+import Settings from './pages/Settings';
 import NotFound from './pages/NotFound';
-import getIcon from './utils/iconUtils';
-
-// Icon component declarations
-const MoonIcon = getIcon('Moon');
-const SunIcon = getIcon('Sun');
+import getIcon from './utils/iconUtils'; 
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -16,6 +15,8 @@ function App() {
     return savedMode ? JSON.parse(savedMode) : 
            window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
+
+  const [files, setFiles] = useState([]);
 
   useEffect(() => {
     if (darkMode) {
@@ -26,62 +27,39 @@ function App() {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
   }, [darkMode]);
 
+  // Handler for file uploads
+  const handleFileUpload = (newFiles) => {
+    const filesWithMetadata = newFiles.map(file => ({
+      id: crypto.randomUUID(),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: new Date(file.lastModified),
+      uploadDate: new Date()
+    }));
+    
+    setFiles(prev => [...filesWithMetadata, ...prev]);
+    
+    if (newFiles.length > 0) {
+      toast.success(`Successfully uploaded ${newFiles.length} file${newFiles.length > 1 ? 's' : ''}`);
+    }
+  };
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
   return (
     <>
-      <div className="min-h-screen flex flex-col">
-        <header className="border-b border-surface-200 dark:border-surface-700 sticky top-0 z-10 bg-white dark:bg-surface-800 shadow-sm">
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div className="flex items-center gap-2">
-              <div className="text-primary-dark dark:text-primary-light font-bold text-2xl">
-                DropVault
-              </div>
-            </div>
-            <button 
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
-              aria-label={darkMode ? "Switch to light mode" : "Switch to dark mode"}
-            >
-              {darkMode ? 
-                <SunIcon className="h-5 w-5 text-yellow-400" /> : 
-                <MoonIcon className="h-5 w-5 text-surface-600" />
-              }
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-grow container mx-auto px-4 py-8">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-
-        <footer className="bg-surface-100 dark:bg-surface-800 border-t border-surface-200 dark:border-surface-700 py-6">
-          <div className="container mx-auto px-4">
-            <div className="text-center text-surface-500 dark:text-surface-400 text-sm">
-              &copy; {new Date().getFullYear()} DropVault. All rights reserved.
-            </div>
-          </div>
-        </footer>
-      </div>
-
-      <ToastContainer
-        position="bottom-right"
-        autoClose={4000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme={darkMode ? "dark" : "light"}
-        toastClassName="text-sm font-medium"
-      />
+      <Routes>
+        <Route path="/" element={<DashboardLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}>
+          <Route index element={<Dashboard files={files} />} />
+          <Route path="files" element={<FileManager files={files} onFileUpload={handleFileUpload} />} />
+          <Route path="settings" element={<Settings />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
+      <ToastContainer position="bottom-right" autoClose={4000} newestOnTop theme={darkMode ? "dark" : "light"} toastClassName="text-sm font-medium" />
     </>
   );
 }

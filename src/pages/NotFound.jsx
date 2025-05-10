@@ -9,8 +9,8 @@ const HomeIcon = getIcon('Home');
 
 function NotFound() {
   return (
-    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 text-center">
-      <motion.div 
+    <div className="h-full flex flex-col items-center justify-center px-4 text-center">
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -28,18 +28,17 @@ function NotFound() {
           or is temporarily unavailable.
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-row justify-center gap-4">
           <Link to="/" className="btn-primary flex items-center justify-center gap-2">
             <HomeIcon className="h-5 w-5" />
             <span>Go Home</span>
           </Link>
           
-          <button 
-            onClick={() => window.history.back()} 
+          <button
+            onClick={() => window.history.back()}
             className="btn-outline flex items-center justify-center gap-2"
           >
             <ArrowLeftIcon className="h-5 w-5" />
-            <span>Go Back</span>
           </button>
         </div>
       </motion.div>
