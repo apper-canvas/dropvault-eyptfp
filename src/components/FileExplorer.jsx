@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import getIcon from '../utils/iconUtils';
 import FileItem from './FileItem';
+import ShareModal from './ShareModal';
 
 // Icon declarations
 const SearchIcon = getIcon('Search');
@@ -9,16 +10,31 @@ const GridIcon = getIcon('Grid');
 const ListIcon = getIcon('List');
 const FolderIcon = getIcon('Folder');
 
-function FileExplorer({ files }) {
+function FileExplorer({ files, folders, tags, toggleFileTag, moveFile, shareFile, setSharedFiles }) {
   const [viewMode, setViewMode] = useState('list'); // 'list' or 'grid'
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('date'); // 'name', 'date', 'size'
+  const [sortDirection, setSortDirection] = useState('desc'); // 'asc', 'desc'
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
   
   const filteredFiles = files.filter(file => 
     file.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
+    if (sortBy === 'name') return sortDirection === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+    if (sortBy === 'size') return sortDirection === 'asc' ? a.size - b.size : b.size - a.size;
+    return sortDirection === 'asc' ? a.uploadDate - b.uploadDate : b.uploadDate - a.uploadDate;
+  });
+  
+  const handleShareClick = (file) => {
+    setSelectedFile(file);
+    setShowShareModal(true);
+  };
 
   return (
-    <div className="flex flex-col h-full card overflow-hidden">
+    <div className="flex flex-col h-full card overflow-hidden relative">
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 p-4 border-b border-surface-200 dark:border-surface-700">
         <div className="relative w-full md:w-auto flex-grow max-w-md">
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -51,9 +67,31 @@ function FileExplorer({ files }) {
             </button>
           </div>
           
-          <button className="btn-outline flex items-center gap-2 py-1.5">
-            <FilterIcon className="w-4 h-4" />
-            <span>Filter</span>
+          <button 
+            className="btn-outline flex items-center gap-2 py-1.5"
+            onClick={() => {
+              const newDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+              setSortDirection(newDirection);
+            }}
+          >
+            <span>Sort</span>
+            <span className="text-xs">{sortDirection === 'asc' ? '↑' : '↓'}</span>
+          </button>
+          
+          <button 
+            className="btn-outline flex items-center gap-2 py-1.5 ml-2"
+            onClick={() => {
+              const options = ['date', 'name', 'size'];
+              const currentIndex = options.indexOf(sortBy);
+              const nextIndex = (currentIndex + 1) % options.length;
+              setSortBy(options[nextIndex]);
+            }}
+          >
+            <span>
+              {sortBy === 'date' && 'Date'}
+              {sortBy === 'name' && 'Name'}
+              {sortBy === 'size' && 'Size'}
+            </span>
           </button>
         </div>
       </div>
@@ -61,11 +99,19 @@ function FileExplorer({ files }) {
       <div className="flex-1 overflow-auto p-4">
         {filteredFiles.length > 0 ? (
           <div className={viewMode === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4' : 'space-y-2'}>
-            {filteredFiles.map(file => (
+            {sortedFiles.map(file => (
               <FileItem 
                 key={file.id} 
                 file={file} 
                 viewMode={viewMode} 
+                tags={tags}
+                folders={folders}
+                onShare={() => handleShareClick(file)}
+                onTagToggle={(tagId) => toggleFileTag(file.id, tagId)}
+                onMove={(folderId) => moveFile(file.id, folderId)}
+                fileTags={file.tags || []}
+                showMoveOptions={true}
+                showTagOptions={true}
               />
             ))}
           </div>
@@ -86,6 +132,19 @@ function FileExplorer({ files }) {
             )}
           </div>
         )}
+      
+      {showShareModal && selectedFile && (
+        <ShareModal 
+          file={selectedFile}
+          onClose={() => {
+            setShowShareModal(false);
+            setSelectedFile(null);
+          }}
+          onShare={(linkDetails) => {
+            setSharedFiles(prev => [...prev, { ...selectedFile, ...linkDetails }]);
+          }}
+        />
+      )}
       </div>
     </div>
   );
