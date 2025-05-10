@@ -149,6 +149,7 @@ function Dashboard({ files }) {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card overflow-hidden lg:col-span-2">
+          <div className="p-4 flex items-center justify-between">
             <div>
               <h2 className="font-bold text-lg flex items-center">
                 <BarChartIcon className="mr-2 h-5 w-5 text-primary" />
@@ -163,30 +164,31 @@ function Dashboard({ files }) {
                 className={`h-5 w-5 text-primary ${isUpdating ? 'animate-spin' : ''}`} 
               />
             </div>
-            </h2>
           </div>
-            {chartOptions && activityData ? (
+          <div className="px-4 pb-4">
             {chartOptions && (
-              <Chart 
-                series={activityData.series} 
-                ]} 
-                type="line" 
-                height={250} 
-            ) : (
-              <div className="flex items-center justify-center h-64">
-                <div className="text-center">
-                  <RefreshCwIcon 
-                    className="h-10 w-10 text-primary animate-spin mx-auto mb-4"
-                  />
-                  <p className="text-surface-600 dark:text-surface-400">
-                    Loading activity data...
-                  </p>
-                  <p className="text-sm text-surface-500 dark:text-surface-500 mt-2">
-                    Connecting to real-time data stream
-                  </p>
+              activityData ? (
+                <Chart 
+                  options={chartOptions}
+                  series={activityData.series}
+                  type="line" 
+                  height={250} 
+                />
+              ) : (
+                <div className="flex items-center justify-center h-64">
+                  <div className="text-center">
+                    <RefreshCwIcon 
+                      className="h-10 w-10 text-primary animate-spin mx-auto mb-4"
+                    />
+                    <p className="text-surface-600 dark:text-surface-400">
+                      Loading activity data...
+                    </p>
+                    <p className="text-sm text-surface-500 dark:text-surface-500 mt-2">
+                      Connecting to real-time data stream
+                    </p>
+                  </div>
                 </div>
-              </div>
-              />
+              )
             )}
           </div>
         </div>
