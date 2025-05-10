@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import { LayoutGrid, FolderOpen, Settings, Menu, X, Moon, Sun, LogOut, FileArchive } from 'lucide-react';
 import getIcon from '../utils/iconUtils';
 
 // Icon declarations
@@ -19,8 +19,11 @@ function DashboardLayout({ darkMode, toggleDarkMode }) {
     <div className="flex h-screen bg-surface-50 dark:bg-surface-900">
       {/* Mobile sidebar */}
       <div 
-        className={`fixed inset-0 z-20 transition-opacity bg-surface-800 bg-opacity-60 ${
-          sidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          <div className="p-4 border-b border-surface-200 dark:border-surface-700 flex items-center">
+            <span className="text-primary flex items-center">
+              <FileArchive className="w-6 h-6 mr-2" />
+            </span>
+            <Link to="/" className="text-surface-900 dark:text-surface-50 hover:text-primary dark:hover:text-primary-light transition-colors">My Dashboard</Link>
         }`}
         onClick={() => setSidebarOpen(false)}
         aria-hidden="true"
