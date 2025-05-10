@@ -55,7 +55,6 @@ function App() {
       toast.success(`Successfully uploaded ${newFiles.length} file${newFiles.length > 1 ? 's' : ''}`);
     }
   };
-  };
 
   // Folder management
   const createFolder = (name, parentId = activeFolder) => {
@@ -121,7 +120,6 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<DashboardLayout darkMode={darkMode} toggleDarkMode={toggleDarkMode} />}>
-          <Route index element={<Dashboard files={files} />} />
           <Route index element={<Dashboard files={files} sharedFiles={sharedFiles} />} />
           <Route path="files" element={
             <FileManager 
