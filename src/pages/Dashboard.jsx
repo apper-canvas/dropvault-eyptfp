@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import Chart from 'react-apexcharts';
 import getIcon from '../utils/iconUtils';
 import FileItem from '../components/FileItem';
+import { connectToActivityStream, disconnectFromActivityStream } from '../utils/activityService';
 
 // Icon declarations
 const FolderIcon = getIcon('Folder');
@@ -13,11 +14,15 @@ const BarChartIcon = getIcon('BarChart');
 const FileIcon = getIcon('FileText');
 const UsersIcon = getIcon('Users');
 const PlusIcon = getIcon('Plus');
+const RefreshCwIcon = getIcon('RefreshCw');
 
 function Dashboard({ files }) {
   const [chartOptions, setChartOptions] = useState(null);
+  const [activityData, setActivityData] = useState(null);
+  const [isUpdating, setIsUpdating] = useState(false);
   const recentFiles = files.slice(0, 5);
   const totalStorage = files.reduce((total, file) => total + file.size, 0);
+  const [lastUpdated, setLastUpdated] = useState(null);
   
   // Prepare chart data
   useEffect(() => {
@@ -52,6 +57,24 @@ function Dashboard({ files }) {
     });
   }, []);
 
+  // Connect to activity data service
+  useEffect(() => {
+    // Handle incoming activity data updates
+    const handleActivityUpdate = (data) => {
+      setIsUpdating(true);
+      setActivityData(data);
+      setLastUpdated(new Date());
+      
+      // Reset updating state after animation
+      setTimeout(() => setIsUpdating(false), 700);
+    };
+    
+    // Connect to data stream and get cleanup function
+    const intervalId = connectToActivityStream(handleActivityUpdate);
+    
+    return () => disconnectFromActivityStream(intervalId, handleActivityUpdate);
+  }, []);
+
   // Format file size
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes';
@@ -59,6 +82,13 @@ function Dashboard({ files }) {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  // Format the last updated time
+  const formatLastUpdated = (date) => {
+    if (!date) return 'Not yet updated';
+    
+    return `Last updated ${format(date, 'hh:mm:ss a')}`;
   };
 
   return (
@@ -119,28 +149,43 @@ function Dashboard({ files }) {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="card overflow-hidden lg:col-span-2">
-          <div className="flex items-center justify-between border-b border-surface-200 dark:border-surface-700 p-4">
-            <h2 className="font-bold text-lg flex items-center">
-              <BarChartIcon className="mr-2 h-5 w-5 text-primary" />
-              Activity Overview
+            <div>
+              <h2 className="font-bold text-lg flex items-center">
+                <BarChartIcon className="mr-2 h-5 w-5 text-primary" />
+                Activity Overview
+              </h2>
+              <p className="text-sm text-surface-500 dark:text-surface-400 mt-1">
+                {formatLastUpdated(lastUpdated)}
+              </p>
+            </div>
+            <div className="flex items-center">
+              <RefreshCwIcon 
+                className={`h-5 w-5 text-primary ${isUpdating ? 'animate-spin' : ''}`} 
+              />
+            </div>
             </h2>
           </div>
-          <div className="p-4">
+            {chartOptions && activityData ? (
             {chartOptions && (
               <Chart 
-                options={chartOptions} 
-                series={[
-                  {
-                    name: 'Uploads',
-                    data: [30, 40, 25, 50, 49, 21, 70]
-                  },
-                  {
-                    name: 'Downloads',
-                    data: [10, 20, 15, 30, 25, 10, 33]
-                  }
+                series={activityData.series} 
                 ]} 
                 type="line" 
                 height={250} 
+            ) : (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <RefreshCwIcon 
+                    className="h-10 w-10 text-primary animate-spin mx-auto mb-4"
+                  />
+                  <p className="text-surface-600 dark:text-surface-400">
+                    Loading activity data...
+                  </p>
+                  <p className="text-sm text-surface-500 dark:text-surface-500 mt-2">
+                    Connecting to real-time data stream
+                  </p>
+                </div>
+              </div>
               />
             )}
           </div>
